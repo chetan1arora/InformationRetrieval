@@ -5,8 +5,11 @@ import operator
 import nltk
 nltk.download('punkt')
 nltk.download('wordnet')
+nltk.download('averaged_perceptron_tagger')
 from nltk import regexp_tokenize
 from nltk.util import ngrams
+from nltk import pos_tag
+from nltk.corpus import wordnet
 
 #Stemming PorterStemmer
 from nltk.stem import PorterStemmer
@@ -33,7 +36,17 @@ def findPatterns(listOfWords):
 	plot(listOfWords)
 	plot(bigrams)
 	plot(trigrams)
-
+def tagWordNet(treebank_tag):
+    if treebank_tag.startswith('J'):
+        return wordnet.ADJ
+    elif treebank_tag.startswith('V'):
+        return wordnet.VERB
+    elif treebank_tag.startswith('N'):
+        return wordnet.NOUN
+    elif treebank_tag.startswith('R'):
+        return wordnet.ADV
+    else:
+        return wordnet.NOUN
 # Taking input from file
 f = open('../wiki_16','r')
 unparsedData = f.read()
@@ -52,56 +65,55 @@ data = ' '.join([tag.getText().lower() for tag in docList])
 # 		data = data.replace(w,' ' if w in ('\n','  ') else '')
 
 #Using nltk libraries for making ngrams
-listOfWords = [x for x in regexp_tokenize(data,r'[?"\s(),.&-]', gaps=True) if x not in ('',' ')]
+listOfWords = [x for x in regexp_tokenize(data,r'[?\s(),.&-"]', gaps=True) if x not in ('',' ')]
 
 # #Without stemming and lemmatization
 # findPatterns(listOfWords)
-
 
 # # Stemming process
 # stemmer = PorterStemmer()
 # stemProcessedWords = [stemmer.stem(w) for w in listOfWords]
 # findPatterns(stemProcessedWords)
 
+# lemmatization process
+# Pos tagging
+taggedWords = pos_tag(listOfWords)
+wordNetTaggedWords = [tagWordNet(x[1]) for x in taggedWords]
 
-# # lemmatization process
-# lemmatizer = WordNetLemmatizer()
-# lemmatizedWords = [lemmatizer.lemmatize(w) for w in listOfWords]
-# findPatterns(lemmatizedWords)
+lemmatizer = WordNetLemmatizer()
+lemmatizedWords = [lemmatizer.lemmatize(listOfWords[x],wordNetTaggedWords[x]) for x in range(len(taggedWords))]
+findPatterns(lemmatizedWords)
 
+# #Chi-Square test for finding bi-gram collocations
+# bigrams = [x for x in ngrams(listOfWords,2)]
+# # Occurances and Expentances
+# ocs = {}
+# firstOcs = {}
+# lastOcs = {}
+# chiValues = {}
+# for bigram in bigrams:
+# 	if bigram in ocs:
+# 		ocs[bigram] += 1
+# 	else:
+# 		ocs[bigram] = 1
+# 		if bigram[0] in firstOcs:
+# 			firstOcs[bigram[0]] += 1
+# 		else:
+# 			firstOcs[bigram[0]] = 1
+# 		if bigram[1] in lastOcs:
+# 			lastOcs[bigram[1]] += 1
+# 		else:
+# 			lastOcs[bigram[1]] = 1
 
-#Chi-Square test for finding bi-gram collocations
-bigrams = [x for x in ngrams(listOfWords,2)]
-# Occurances and Expentances
-ocs = {}
-firstOcs = {}
-lastOcs = {}
-chiValues = {}
-for bigram in bigrams:
-	if bigram in ocs:
-		ocs[bigram] += 1
-	else:
-		ocs[bigram] = 1
-		if bigram[0] in firstOcs:
-			firstOcs[bigram[0]] += 1
-		else:
-			firstOcs[bigram[0]] = 1
-		if bigram[1] in lastOcs:
-			lastOcs[bigram[1]] += 1
-		else:
-			lastOcs[bigram[1]] = 1
+# N = len(bigrams)
+# for bg in ocs:
+# 	O = ocs[bg]
+# 	E = (firstOcs[bg[0]]*lastOcs[bg[1]])/N
+# 	chiSquare = (O-E)*(O-E)/E
+# 	#Checking if chiSquare is comparable to 3.8 (probability distribution for 0.05)
+# 	chiValues[bg] = chiSquare
 
-N = len(bigrams)
-for bg in ocs:
-	O = ocs[bg]
-	E = (firstOcs[bg[0]]*lastOcs[bg[1]])/N
-	chiSquare = (O-E)*(O-E)/E
-	#Checking if chiSquare is comparable to 3.8 (probability distribution for 0.05)
-	chiValues[bg] = chiSquare
+# sorted_values = sorted(chiValues.items(),key=operator.itemgetter(1),reverse=True)
 
-sorted_values = sorted(chiValues.items(),key=operator.itemgetter(1),reverse=True)
-
-for i in range(20):
-	print(sorted_values[i][0],end=',')
-
-
+# for i in range(20):
+# 	print(sorted_values[i][0],end=',')
