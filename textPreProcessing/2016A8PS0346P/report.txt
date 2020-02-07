@@ -1,0 +1,71 @@
+Name: Chetan Arora
+Student ID: 2016A8PS0346P
+BITS Email: f2016346@pilani.bits-pilani.ac.in
+Wikipedia file used: AI/wiki_16
+
+Answer 1: 
+
+
+a)  
+b) The distribution plot is available in image X.png
+c) 
+
+Answer 2:
+a)
+b)
+c)
+
+
+Answer 3:
+a)
+b)
+c)
+
+Answer 4:
+a) Unigram analysis after stemming
+  i)
+  ii)
+  iii)
+
+b) Bigram analysis after stemming
+  i)
+  ii)
+  iii)
+
+c) Trigram analysis after stemming
+  i)
+  ii)
+  iii)
+
+Answer 5:
+a) Unigram analysis after lemmatization
+  i)
+  ii)
+  iii)
+
+b) Bigram analysis after lemmatization
+  i)
+  ii)
+  iii)
+
+c) Trigram analysis after lemmatization
+  i)
+  ii)
+  iii)
+
+Answer 6:
+Your brief summarization of the above result and how they are related to the zipf's law.
+
+
+Answer 7:
+Examples where you observe that tokenization is not correct and why it is not correct?
+Note: It is possible to include any unicode character in .txt files: cliché, ω, 😀.
+
+Answer 8:
+
+
+Answer 9:
+
+
+Answer 10:
+The top 20 bi-grams obtained using the Chi-square test.
