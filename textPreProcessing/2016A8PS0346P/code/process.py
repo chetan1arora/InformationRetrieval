@@ -39,29 +39,27 @@ def mostOccuring(dist,p):
 def findPatterns(listOfWords,title):
 	unigrams = listOfWords
 	bigrams = list(ngrams(listOfWords,2))
-	print("Total number of bigrams:"+str(len(bigrams)))
 	trigrams = list(ngrams(listOfWords,3))
-	print("Total number of trigrams:"+str(len(trigrams)))
 	pid = os.fork()
 	if pid==0:
 		#Unigrams
 		dist = nltk.FreqDist(listOfWords)
-		print("Number of "+title+" unigrams that make up 90%:"+mostOccuring(dist,0.9*len(listOfWords)))
-		print("Number of unique unigrams after"+title+str(len(dist.keys())))
-		print("Exit unigrams plot to get bigram plots")
+		print("Number of unique unigrams after "+title+" :"+str(len(dist.keys())))
+		print("[*]Number of "+title+" unigrams that make up 90%:"+mostOccuring(dist,0.9*len(listOfWords)))
+		print("[-]Exit unigrams plot to get bigram plots")
 		dist.plot(30,cumulative=False,title=title+' Unigrams')
 
 		#Bigrams
-		print("Exit Bigrams plot to get trigram plots")
+		print("[-]Exit Bigrams plot to get trigram plots")
 		dist = nltk.FreqDist(bigrams)
-		print("Number of "+title+" bigrams that make up 80%:"+mostOccuring(dist,0.8*len(listOfWords)))
-		print("Number of unique bigrams after"+title+str(len(dist.keys())))
+		print("Number of unique bigrams after "+title+" :"+str(len(dist.keys())))
+		print("[*]Number of "+title+" bigrams that make up 80%:"+mostOccuring(dist,0.8*len(bigrams)))
 		dist.plot(30,cumulative=False,title=title+' Bigrams')		
 
 		#Trigrams
 		dist = nltk.FreqDist(trigrams)
-		print("Number of "+title+" trigrams that make up 70%:"+mostOccuring(dist,0.7*len(listOfWords)))
-		print("Number of unique trigrams after"+title+str(len(dist.keys())))
+		print("Number of unique trigrams after "+title+" :"+str(len(dist.keys())))
+		print("[*]Number of "+title+" trigrams that make up 70%:"+mostOccuring(dist,0.7*len(trigrams)))
 		dist.plot(30,cumulative=False,title=title+' Trigrams')				
 		sys.exit()
 	return
@@ -77,13 +75,17 @@ def tagWordNet(treebank_tag):
     else:
         return wordnet.NOUN
 # Taking input from file
-if len(sys.argv)!=2:
-	print("Usage:")
-	print("python3 process.py file")
-	sys.exit()
-f = open(sys.argv[1],'r')
-unparsedData = f.read()
-f.close()
+# print("Usage:")
+	# print("python3 process.py relativePath")
+	# sys.exit()
+if len(sys.argv)==2:
+	f = open(sys.argv[1],'r')
+	unparsedData = f.read()
+	f.close()
+else:
+	f=open('wiki_44','r')
+	unparsedData = f.read()
+	f.close()
 
 #Parsing Data using BeautifulSoup
 
@@ -100,7 +102,6 @@ data = ' '.join([tag.getText().lower() for tag in docList])
 #Using nltk libraries for making ngrams
 listOfWords = [x for x in regexp_tokenize(data,r'[?"\s(),.&\-]', gaps=True) if x not in ('',' ')]
 
-print("Total number of unique Tokenized words:")
 #Without stemming and lemmatization
 findPatterns(listOfWords,'Tokenized')
 
@@ -144,7 +145,6 @@ for bg in ocs:
 	O = ocs[bg]
 	E = (firstOcs[bg[0]]*lastOcs[bg[1]])/N
 	chiSquare = (O-E)*(O-E)/E
-	#Checking if chiSquare is comparable to 3.8 (probability distribution for 0.05)
 	chiValues[bg] = chiSquare
 
 sorted_values = sorted(chiValues.items(),key=operator.itemgetter(1),reverse=True)

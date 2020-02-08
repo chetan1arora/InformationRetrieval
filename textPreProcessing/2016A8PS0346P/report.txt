@@ -5,7 +5,6 @@ Wikipedia file used: AA/wiki_44
 
 Answer 1: 
 
-
 a) 73579
 b) The distribution plot is available in image unigrams.png
 c) 11042
@@ -13,7 +12,7 @@ c) 11042
 Answer 2:
 a) 613665
 b) The distribution plot is available in image bigrams.png
-c) 344944
+c) 344943
 
 
 Answer 3:
@@ -24,47 +23,88 @@ c) 697288
 Answer 4:
 a) Unigram analysis after stemming
   i) 57349
-  ii)
+  ii) The distribution plot is available in image unigrams.png
   iii) 5838
 
 b) Bigram analysis after stemming
   i) 558591
-  ii)
-  iii) 289870
+  ii) The distribution plot is available in image bigrams.png
+  iii) 289869
 
 c) Trigram analysis after stemming
   i) 1080404
-  ii)
-  iii) 677323
+  ii) The distribution plot is available in image trigrams.png
+  iii) 677321
 
 Answer 5:
 a) Unigram analysis after lemmatization
   i) 65743
-  ii)
+  ii) The distribution plot is available in image unigrams.png
   iii) 7553 
 
 b) Bigram analysis after lemmatization
   i) 560695
-  ii)
-  iii) 291974
+  ii) The distribution plot is available in image bigrams.png
+  iii) 291973
 
 c) Trigram analysis after lemmatization
   i) 1070916
-  ii)
-  iii) 667835
+  ii) The distribution plot is available in image trigrams.png
+  iii) 667833
 
 Answer 6:
 Your brief summarization of the above result and how they are related to the zipf's law.
 
+Relation of frequencies of n-grams shows:
+  Frequencies(trigrams) < Frequencies(bigrams) < Frequencies(unigrams)
+
+After stemming unique n-grams increases as compared to lemmatization because stemming strips the word leading to more chances of same base words
+e.g. him,his -> hi (which also matches 'hi'(greeting))
+
+After lemmatization, unique n-grams will decrease because they are converted to same base word(This mostly works in case of verbs)
+e.g. is,are,were,was -> be
+
+In each case(unigram, bigram, trigram) with or without any language pre-processing, the hyperbolic plot shows that:
+The number of times a word appears(freq) to be inversely proportional to the ranking(Most frequent to least frequent) of the word and therefore relates to zipf's law.
+  
+  freq = constant/rank
+
+
 
 Answer 7:
 Examples where you observe that tokenization is not correct and why it is not correct?
-Note: It is possible to include any unicode character in .txt files: cliché, ω, 😀.
 
-Answer 8:
+Initially, I used word_tokenize from nltk, but it does not strips(removes) special characters:
+1. Full Stop(.) -> If we remove it
+Example: This is an orange. He eats orange 
+We get a bigram like (orange, He)
+
+2. being? -> '?' not removed
+
+3. Apostrophe -> (\') If we remove it, the word does not make sense
+Example -> wasn't-> (wasnt)
+wasn't => was not
 
 
-Answer 9:
+Answer 8: 
+For Tokenization: regexp_tokenize from nltk library (Defined a pattern for regular expression to escape special characters)
+For bigrams and trigrams: Used ngram from nltk utilites library (Returns genrator that gives list of n-grams)
+
+For Stemming: Used PorterStemmer from nltk library(Based on the idea that english language has common suffixes for every word)
+
+For Lemmatizer: Used WordNetLemmatizer with word-tagging for getting the type of word (eg. Noun,verb,adverb,adjective) using Average-perceptron-tagger
+
+
+Answer 9: 
+Tokenizer used from nltk recognizes special characters like ('$','-' in dates).
+Example:
+"Give me 200$" => ['Give','me','200']
+"Today is 20/Nov/1998" => ['Today','is','20','Nov','1998']
+"My birthdate is 01-march-1867" => ['My','birthday','is','01','march','1867']
+"Current time is 12:36 pm" => ['Current','time','is','12','36','pm']
+
+It can not tokenize numbers and words merged together (e.g. 12pm does not give '12', 'pm')
+"Time is 12pm" => ['Time','is','12pm'] 
 
 
 Answer 10:
@@ -89,3 +129,4 @@ The top 20 bi-grams obtained using the Chi-square test.
 ('hong', 'kong')
 ('midsummer', "night's")
 ('obi', 'wan')
+
