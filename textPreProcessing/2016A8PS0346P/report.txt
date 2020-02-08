@@ -1,57 +1,57 @@
 Name: Chetan Arora
 Student ID: 2016A8PS0346P
 BITS Email: f2016346@pilani.bits-pilani.ac.in
-Wikipedia file used: AI/wiki_16
+Wikipedia file used: AA/wiki_44
 
 Answer 1: 
 
 
-a)  
-b) The distribution plot is available in image X.png
-c) 
+a) 73579
+b) The distribution plot is available in image unigrams.png
+c) 11042
 
 Answer 2:
-a)
-b)
-c)
+a) 613665
+b) The distribution plot is available in image bigrams.png
+c) 344944
 
 
 Answer 3:
-a)
-b)
-c)
+a) 1100369
+b) The distribution plot is available in image trigrams.png
+c) 697288
 
 Answer 4:
 a) Unigram analysis after stemming
-  i)
+  i) 57349
   ii)
-  iii)
+  iii) 5838
 
 b) Bigram analysis after stemming
-  i)
+  i) 558591
   ii)
-  iii)
+  iii) 289870
 
 c) Trigram analysis after stemming
-  i)
+  i) 1080404
   ii)
-  iii)
+  iii) 677323
 
 Answer 5:
 a) Unigram analysis after lemmatization
-  i)
+  i) 65743
   ii)
-  iii)
+  iii) 7553 
 
 b) Bigram analysis after lemmatization
-  i)
+  i) 560695
   ii)
-  iii)
+  iii) 291974
 
 c) Trigram analysis after lemmatization
-  i)
+  i) 1070916
   ii)
-  iii)
+  iii) 667835
 
 Answer 6:
 Your brief summarization of the above result and how they are related to the zipf's law.
@@ -69,3 +69,23 @@ Answer 9:
 
 Answer 10:
 The top 20 bi-grams obtained using the Chi-square test.
+('hip', 'hop')
+('los', 'angeles')
+('palo', 'alto')
+('pon', 'farr')
+('ngô', 'đình')
+('san', 'jose')
+('buenos', 'aires')
+('bảo', 'đại')
+('le', 'havre')
+('jus', 'soli')
+('ancien', 'régime')
+('mardi', 'gras')
+('benvenuto', 'cellini')
+('santa', 'clara')
+('symphonie', 'fantastique')
+('notre', 'dame')
+('united', 'states')
+('hong', 'kong')
+('midsummer', "night's")
+('obi', 'wan')
