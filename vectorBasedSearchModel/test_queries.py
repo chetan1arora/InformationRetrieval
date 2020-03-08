@@ -29,10 +29,11 @@ k= 10
 
 
 def cosineNorm(wt):
+	if(len(wt) == 1):
+		return wt
 	a = 0
 	for i in wt:
 		a += i*i
-
 	a = 1/math.sqrt(a)
 	wt = [a*x for x in wt]
 	return wt
@@ -59,14 +60,13 @@ def fetchDocuments(axis):
 def getTermFrequency(word,docId):
 	for node in invertedIndex[word]:
 		if(node[1] == docId):
-			return node[0]
+			return (1 + math.log(node[0],base))
 	return 0
 
 def weightDoc(axis, docId):
 	docWt = []
 	for idx in range(len(axis)):
 		docWt.append(getTermFrequency(axis[idx], docId))
-
 	docWt = cosineNorm(docWt)
 	return docWt
 

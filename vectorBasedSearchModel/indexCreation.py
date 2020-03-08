@@ -39,6 +39,7 @@ def addWiki(wikiPath, invertedIndex,docSet):
 	for doc in docList:
 		docId = int(doc.get('id'))
 		docSet[docId] = doc.get('title')
+		listOfWords = []
 		listOfWords =  [x for x in regexp_tokenize(doc.getText().lower(),r'[?"\'\s(),.&\-]', gaps=True) if x not in ('',' ')]
 		dist = nltk.FreqDist(listOfWords)
 		for word in dist:
@@ -47,7 +48,7 @@ def addWiki(wikiPath, invertedIndex,docSet):
 			invertedIndex[word].append((dist[word], docId))
 
 wikiList = []
-for i in range(1):
+for i in range(25):
 	temp = str(i)
 	if(len(temp) == 1):
 		temp = '0'+temp
