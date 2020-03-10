@@ -6,13 +6,17 @@ import operator
 #NLP library used
 import nltk
 # nltk.download('punkt')
-from nltk import regexp_tokenize
+from nltk.tokenize import RegexpTokenizer
+tokenizer = RegexpTokenizer(r'\w+|\$[\d\.]+|\S+-')
 
 #HTML parsing library
 import bs4
 
 #Pickling library
 import pickle
+
+#Finding outliers
+from scipy import stats
 
 
 # Source from multiple documents
@@ -23,6 +27,25 @@ import pickle
 invertedIndex = {}
 docSet = {}
 # word: list of Docs mapping
+
+def truncateList(invertedIndex):
+	# count = len(invertedIndex.keys())
+	# s = 0
+	# for x in invertedIndex:
+	# 	s += len(invertedIndex[x])
+	# av = int(s/count)
+	# print(av)
+	lenArray = [len(invertedIndex[x]) for x in invertedIndex]
+	z = stats.zscore(lenArray)
+
+	threshold = 3
+	inliers = [lenArray[i] for i in range(len(lenArray)) if z[i]<threshold]
+	maxValue = max(inliers)
+	print(maxValue)
+	print("Num of lists truncated"+str(len(invertedIndex.keys())-len(inliers)))
+	for x in invertedIndex:
+		invertedIndex[x] = invertedIndex[x][:2000+1]
+	return invertedIndex
 
 def addWiki(wikiPath, invertedIndex,docSet):
 	f=open(wikiPath,'r')
@@ -39,8 +62,8 @@ def addWiki(wikiPath, invertedIndex,docSet):
 	for doc in docList:
 		docId = int(doc.get('id'))
 		docSet[docId] = doc.get('title')
-		listOfWords = []
-		listOfWords =  [x for x in regexp_tokenize(doc.getText().lower(),r'[?"\'\s(),.&\-]', gaps=True) if x not in ('',' ')]
+		listOfWords = tokenizer.tokenize(doc.getText().lower())
+		# listOfWords =  [x for x in regexp_tokenize(doc.getText().lower(),r'[?"\'\s(),.&\-]', gaps=True) if x not in ('',' ')]
 		dist = nltk.FreqDist(listOfWords)
 		for word in dist:
 			if(word not in invertedIndex):
@@ -58,6 +81,8 @@ for i in range(25):
 for wiki in wikiList:
 	print("[+]Processing "+wiki)
 	addWiki(wiki,invertedIndex,docSet)
+
+invertedIndex = truncateList(invertedIndex)
 
 
 f = open('docTitles','wb')

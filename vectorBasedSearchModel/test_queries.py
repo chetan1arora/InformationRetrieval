@@ -6,7 +6,8 @@ import pickle
 #NLP library used
 import nltk
 # nltk.download('punkt')
-from nltk import regexp_tokenize
+from nltk.tokenize import RegexpTokenizer
+tokenizer = RegexpTokenizer(r'\w+|\$[\d\.]+|\S+-')
 
 # Since the memory for each docID vs word would take much memory, we used unsorted posting list.
 
@@ -27,7 +28,6 @@ k= 10
 # lnc.ltc
 # ddd.qqq
 
-
 def cosineNorm(wt):
 	if(len(wt) == 1):
 		return wt
@@ -39,15 +39,19 @@ def cosineNorm(wt):
 	return wt
 
 def processQuery(query, NumberOfDocs):
-	listOfWords = [x for x in regexp_tokenize(query.lower(),r'[?"\'\s(),.&\-]', gaps=True) if x not in ('',' ')]
+	listOfWords = tokenizer.tokenize(query.lower())
 	queryDist = nltk.FreqDist(listOfWords)
 	axis = [x for x in queryDist]
+	filteredAxis = [x for x in axis if x in invertedIndex]
+	if(filteredAxis == []):
+		return ([],[],[])
 	queryWt = [1 + math.log(queryDist[x], base) for x in queryDist]
 	# Term not being in the invertedIndex (Take case)
+
 	idfWt = [math.log(float(NumberOfDocs)/len(invertedIndex[x])) for x in axis]
 	queryWt = [queryWt[i]*idfWt[i] for i in range(len(axis))]
 	queryWt = cosineNorm(queryWt)
-	return (axis,queryWt)
+	return (axis,queryWt,queryDist)
 
 def fetchDocuments(axis):
 	a = {}
@@ -77,26 +81,52 @@ def scoreDoc(qWt, dWt):
 	# print(score)
 	return score
 
-def searchDocuments(query):
-	(axis,queryWt) = processQuery(query,len(docSet))
-	# for i in range(len(axis)):
-	# 	print(axis[i]+":"+str(queryWt[i]))
-	# 	for j in invertedIndex[axis[i]]:
-	# 		print(j)
+def jaccardCoefficient(a,b):
+	# a and b being Freq Distributions
+	intersecCount =0
+	for i in a:
+		if(i in b):
+			intersecCount += 1
+	unionCount = len(a.keys())+len(b.keys())-intersecCount
 
+	return intersecCount/unionCount
+
+def sortByKey(a):
+	return a[0]
+
+def sortByJaccardCoefficient(topResults, queryDist, docSet):
+	tempResults = []
+	for res in topResults:
+		title = tokenizer.tokenize(docSet[res[0]].lower())
+		coeff = jaccardCoefficient(nltk.FreqDist(title), queryDist)
+		tempResults.append((coeff,res))
+
+	tempResults.sort(key=sortByKey,reverse=1)
+
+	topResults = [x[1] for x in tempResults]
+
+	return topResults
+
+def searchDocuments(query,limit):
+	(axis,queryWt,queryDist) = processQuery(query,len(docSet))
+	if(axis == []):
+		return axis
 	docList = fetchDocuments(axis)
 	scores = {}
 	for doc in docList:
 		docWt = weightDoc(axis, doc)
 		scores[doc] = scoreDoc(queryWt, docWt)
 
-	topResults = sorted(scores.items(),key=operator.itemgetter(1),reverse=1)
+	results = sorted(scores.items(),key=operator.itemgetter(1),reverse=1)
+	limit = min(len(results), limit)
+	topResults = results[:limit]
+
+	topResults = sortByJaccardCoefficient(topResults,queryDist,docSet)
 	return topResults
 
-def showResults(results,limit,docSet):
-	limit = min(len(results), limit)
-	for i in range(limit):
-		print("["+str(i)+"] "+docSet[results[i][0]])
+def showResults(results,docSet):
+	for i in range(len(results)):
+		print("["+str(i)+"] "+docSet[results[i][0]]) # Change here to include scores
 
 initializeMem()
 while(1):
@@ -106,6 +136,8 @@ while(1):
 		break
 	if(query == ""):
 		print("Query can not be empty")
-	results = searchDocuments(query)
-	showResults(results,k,docSet)
-
+	results = searchDocuments(query, k)
+	if results:
+		showResults(results,docSet)
+	else:
+		print("No results Found")
