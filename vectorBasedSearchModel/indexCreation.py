@@ -9,7 +9,7 @@ import nltk
 # nltk.download('stopwords')
 from nltk import regexp_tokenize
 from nltk.corpus import stopwords
-
+from spellchecker import SpellChecker
 #HTML parsing library
 import bs4
 
@@ -25,7 +25,7 @@ import pickle
 invertedIndex = {}
 docSet = {}
 sw = dict.fromkeys(stopwords.words("english"),True)
-
+spell = SpellChecker()
 # word: list of Docs mapping
 
 # def truncateList(invertedIndex):
@@ -65,12 +65,12 @@ def addWiki(wikiPath, invertedIndex,docSet):
 		docId = int(doc.get('id'))
 		docSet[docId] = doc.get('title')
 		# listOfWords = tokenizer.tokenize(doc.getText().lower())
-		listOfWords =  [x for x in regexp_tokenize(doc.getText().lower(),r'[?"\'\s(),.&\-]', gaps=True) if x not in ('',' ')]
+		listOfWords =  [x for x in regexp_tokenize(doc.getText().lower(),r'[?"\s(),.&–\-]', gaps=True) if x not in ('',' ')]
 		dist = nltk.FreqDist(listOfWords)
 		for word in dist:
 			if(word in sw):
 				continue
-			if(word not in invertedIndex):
+			if word not in invertedIndex:	
 				invertedIndex[word] = []
 			invertedIndex[word].append((dist[word], docId))
 

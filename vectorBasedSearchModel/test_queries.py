@@ -7,10 +7,12 @@ import pickle
 import nltk
 # nltk.download('punkt')
 # nltk.download('stopwords')
-from nltk.tokenize import RegexpTokenizer
-tokenizer = RegexpTokenizer(r'\w+|\$[\d\.]+|\S+-')
+from nltk import regexp_tokenize
 from nltk.corpus import stopwords
+from spellchecker import SpellChecker
 # Since the memory for each docID vs word would take much memory, we used unsorted posting list.
+
+# Write about difference of – vs -
 
 # Making the vector space model.
 def initializeMem():
@@ -22,6 +24,9 @@ def initializeMem():
 	global docSet
 	docSet = pickle.load(f)
 	f.close()
+	global checker
+	checker = SpellChecker()
+
 # Using notation
 base = 2
 k= 10
@@ -39,13 +44,16 @@ def cosineNorm(wt):
 	return wt
 
 def processQuery(query, NumberOfDocs):
-	listOfWords = tokenizer.tokenize(query.lower())
+	listOfWords = regexp_tokenize(query.lower(), r'[,.?!"\s–\-]',gaps=True)
 	queryDist = nltk.FreqDist(listOfWords)
 	popWords = []
 	for x in queryDist:
 		if x not in invertedIndex:
 			popWords.append(x)
 	for x in popWords:
+		temp = checker.correction(x)
+		if temp in invertedIndex:
+			queryDist[temp] = queryDist[x]
 		queryDist.pop(x)
 	# If query contains only stop words
 	if(queryDist == {}):
@@ -101,7 +109,7 @@ def sortByKey(a):
 def sortByJaccardCoefficient(topResults, queryDist, docSet):
 	tempResults = []
 	for res in topResults:
-		title = tokenizer.tokenize(docSet[res[0]].lower())
+		title = regexp_tokenize(docSet[res[0]].lower(), r'[,.?!"\s–\-]',gaps=True)
 		coeff = jaccardCoefficient(nltk.FreqDist(title), queryDist)
 		tempResults.append((coeff,res))
 
