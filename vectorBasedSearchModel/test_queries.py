@@ -6,9 +6,10 @@ import pickle
 #NLP library used
 import nltk
 # nltk.download('punkt')
+# nltk.download('stopwords')
 from nltk.tokenize import RegexpTokenizer
 tokenizer = RegexpTokenizer(r'\w+|\$[\d\.]+|\S+-')
-
+from nltk.corpus import stopwords
 # Since the memory for each docID vs word would take much memory, we used unsorted posting list.
 
 # Making the vector space model.
@@ -21,7 +22,6 @@ def initializeMem():
 	global docSet
 	docSet = pickle.load(f)
 	f.close()
-
 # Using notation
 base = 2
 k= 10
@@ -41,13 +41,17 @@ def cosineNorm(wt):
 def processQuery(query, NumberOfDocs):
 	listOfWords = tokenizer.tokenize(query.lower())
 	queryDist = nltk.FreqDist(listOfWords)
+	popWords = []
+	for x in queryDist:
+		if x not in invertedIndex:
+			popWords.append(x)
+	for x in popWords:
+		queryDist.pop(x)
+	# If query contains only stop words
+	if(queryDist == {}):
+		return([],[],[])
 	axis = [x for x in queryDist]
-	filteredAxis = [x for x in axis if x in invertedIndex]
-	if(filteredAxis == []):
-		return ([],[],[])
 	queryWt = [1 + math.log(queryDist[x], base) for x in queryDist]
-	# Term not being in the invertedIndex (Take case)
-
 	idfWt = [math.log(float(NumberOfDocs)/len(invertedIndex[x])) for x in axis]
 	queryWt = [queryWt[i]*idfWt[i] for i in range(len(axis))]
 	queryWt = cosineNorm(queryWt)

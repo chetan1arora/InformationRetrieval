@@ -6,17 +6,16 @@ import operator
 #NLP library used
 import nltk
 # nltk.download('punkt')
+# nltk.download('stopwords')
 from nltk.tokenize import RegexpTokenizer
 tokenizer = RegexpTokenizer(r'\w+|\$[\d\.]+|\S+-')
+from nltk.corpus import stopwords
 
 #HTML parsing library
 import bs4
 
 #Pickling library
 import pickle
-
-#Finding outliers
-from scipy import stats
 
 
 # Source from multiple documents
@@ -26,26 +25,30 @@ from scipy import stats
 
 invertedIndex = {}
 docSet = {}
+sw = dict.fromkeys(stopwords.words("english"),True)
+
 # word: list of Docs mapping
 
-def truncateList(invertedIndex):
-	# count = len(invertedIndex.keys())
-	# s = 0
-	# for x in invertedIndex:
-	# 	s += len(invertedIndex[x])
-	# av = int(s/count)
-	# print(av)
-	lenArray = [len(invertedIndex[x]) for x in invertedIndex]
-	z = stats.zscore(lenArray)
+# def truncateList(invertedIndex):
+# 	# count = len(invertedIndex.keys())
+# 	# s = 0
+# 	# for x in invertedIndex:
+# 	# 	s += len(invertedIndex[x])
+# 	# av = int(s/count)
+# 	# print(av)
+# 	lenArray = [len(invertedIndex[x]) for x in invertedIndex]
+# 	print(max(lenArray))
+# 	z = stats.zscore(lenArray)
 
-	threshold = 3
-	inliers = [lenArray[i] for i in range(len(lenArray)) if z[i]<threshold]
-	maxValue = max(inliers)
-	print(maxValue)
-	print("Num of lists truncated"+str(len(invertedIndex.keys())-len(inliers)))
-	for x in invertedIndex:
-		invertedIndex[x] = invertedIndex[x][:2000+1]
-	return invertedIndex
+# 	threshold = 15
+# 	inliers = [lenArray[i] for i in range(len(lenArray)) if z[i]<threshold]
+# 	maxValue = max(inliers)
+# 	print(maxValue)
+# 	print("Num of lists truncated"+str(len(invertedIndex.keys())-len(inliers)))
+# 	for x in invertedIndex:
+# 		invertedIndex[x] = invertedIndex[x][:maxValue+1]
+# 	return invertedIndex
+
 
 def addWiki(wikiPath, invertedIndex,docSet):
 	f=open(wikiPath,'r')
@@ -66,6 +69,8 @@ def addWiki(wikiPath, invertedIndex,docSet):
 		# listOfWords =  [x for x in regexp_tokenize(doc.getText().lower(),r'[?"\'\s(),.&\-]', gaps=True) if x not in ('',' ')]
 		dist = nltk.FreqDist(listOfWords)
 		for word in dist:
+			if(word in sw):
+				continue
 			if(word not in invertedIndex):
 				invertedIndex[word] = []
 			invertedIndex[word].append((dist[word], docId))
@@ -82,7 +87,7 @@ for wiki in wikiList:
 	print("[+]Processing "+wiki)
 	addWiki(wiki,invertedIndex,docSet)
 
-invertedIndex = truncateList(invertedIndex)
+# invertedIndex = truncateList(invertedIndex)
 
 
 f = open('docTitles','wb')
