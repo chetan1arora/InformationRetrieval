@@ -7,8 +7,7 @@ import operator
 import nltk
 # nltk.download('punkt')
 # nltk.download('stopwords')
-from nltk.tokenize import RegexpTokenizer
-tokenizer = RegexpTokenizer(r'\w+|\$[\d\.]+|\S+-')
+from nltk import regexp_tokenize
 from nltk.corpus import stopwords
 
 #HTML parsing library
@@ -65,8 +64,8 @@ def addWiki(wikiPath, invertedIndex,docSet):
 	for doc in docList:
 		docId = int(doc.get('id'))
 		docSet[docId] = doc.get('title')
-		listOfWords = tokenizer.tokenize(doc.getText().lower())
-		# listOfWords =  [x for x in regexp_tokenize(doc.getText().lower(),r'[?"\'\s(),.&\-]', gaps=True) if x not in ('',' ')]
+		# listOfWords = tokenizer.tokenize(doc.getText().lower())
+		listOfWords =  [x for x in regexp_tokenize(doc.getText().lower(),r'[?"\'\s(),.&\-]', gaps=True) if x not in ('',' ')]
 		dist = nltk.FreqDist(listOfWords)
 		for word in dist:
 			if(word in sw):
