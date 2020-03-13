@@ -5,14 +5,11 @@ import pickle
 
 #NLP library used
 import nltk
-# nltk.download('punkt')
-# nltk.download('stopwords')
+nltk.download('punkt')
+nltk.download('stopwords')
 from nltk import regexp_tokenize
 from nltk.corpus import stopwords
 from spellchecker import SpellChecker
-# Since the memory for each docID vs word would take much memory, we used unsorted posting list.
-
-# Write about difference of – vs -
 
 # Making the vector space model.
 def initializeMem():
@@ -27,20 +24,23 @@ def initializeMem():
 	global checker
 	checker = SpellChecker()
 
-# Using notation
-base = 2
+# Using notation lnc.ltc
+base = 10
 k= 10
-# lnc.ltc
-# ddd.qqq
 
 def cosineNorm(wt):
-	if(len(wt) == 1):
-		return wt
+	# if(len(wt) == 1):
+	# 	return wt
 	a = 0
 	for i in wt:
 		a += i*i
 	a = 1/math.sqrt(a)
 	wt = [a*x for x in wt]
+	return wt
+
+def normalizeDoc(wt,docId):
+	for i in range(len(wt)):
+		wt[i] = wt[i]*docSet[docId][1]
 	return wt
 
 def processQuery(query, NumberOfDocs):
@@ -51,11 +51,12 @@ def processQuery(query, NumberOfDocs):
 		if x not in invertedIndex:
 			popWords.append(x)
 	for x in popWords:
+		# Title spelling correction
 		temp = checker.correction(x)
 		if temp in invertedIndex:
 			queryDist[temp] = queryDist[x]
 		queryDist.pop(x)
-	# If query contains only stop words
+	# If query is empty(Contains only stop words or non known words)
 	if(queryDist == {}):
 		return([],[],[])
 	axis = [x for x in queryDist]
@@ -69,9 +70,8 @@ def fetchDocuments(axis):
 	a = {}
 	for word in axis:
 		for node in invertedIndex[word]:
-			a[node[1]] = 1
+			a[node[1]] = True
 	return list(a)
-
 
 def getTermFrequency(word,docId):
 	for node in invertedIndex[word]:
@@ -83,14 +83,12 @@ def weightDoc(axis, docId):
 	docWt = []
 	for idx in range(len(axis)):
 		docWt.append(getTermFrequency(axis[idx], docId))
-	docWt = cosineNorm(docWt)
 	return docWt
 
 def scoreDoc(qWt, dWt):
 	score = 0
 	for i in range(len(qWt)):
 		score += qWt[i]*dWt[i]
-	# print(score)
 	return score
 
 def jaccardCoefficient(a,b):
@@ -100,23 +98,20 @@ def jaccardCoefficient(a,b):
 		if(i in b):
 			intersecCount += 1
 	unionCount = len(a.keys())+len(b.keys())-intersecCount
-
 	return intersecCount/unionCount
 
-def sortByKey(a):
-	return a[0]
+def sortByKey(pair):
+	return pair[0]
 
 def sortByJaccardCoefficient(topResults, queryDist, docSet):
 	tempResults = []
 	for res in topResults:
-		title = regexp_tokenize(docSet[res[0]].lower(), r'[,.?!"\s–\-]',gaps=True)
+		title = regexp_tokenize(docSet[res[0]][0].lower(), r'[,.?!"\s–\-]',gaps=True)
 		coeff = jaccardCoefficient(nltk.FreqDist(title), queryDist)
 		tempResults.append((coeff,res))
 
 	tempResults.sort(key=sortByKey,reverse=1)
-
 	topResults = [x[1] for x in tempResults]
-
 	return topResults
 
 def searchDocuments(query,limit):
@@ -127,23 +122,25 @@ def searchDocuments(query,limit):
 	scores = {}
 	for doc in docList:
 		docWt = weightDoc(axis, doc)
+		docWt = normalizeDoc(docWt,doc)
 		scores[doc] = scoreDoc(queryWt, docWt)
 
 	results = sorted(scores.items(),key=operator.itemgetter(1),reverse=1)
 	limit = min(len(results), limit)
 	topResults = results[:limit]
-
+	
+	# Sorting by Jaccard Coefficient
 	topResults = sortByJaccardCoefficient(topResults,queryDist,docSet)
 	return topResults
 
 def showResults(results,docSet):
 	for i in range(len(results)):
-		print("["+str(i)+"] "+docSet[results[i][0]]) # Change here to include scores
+		print("["+str(i+1)+"] "+docSet[results[i][0]][0])
 
 initializeMem()
 while(1):
 	print("Search engine(wiki AA):",end='')
-	query = input() # Free text query
+	query = input()
 	if(query == 'exit'):
 		break
 	if(query == ""):

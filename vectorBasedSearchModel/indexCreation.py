@@ -3,51 +3,31 @@
 #OS libraries
 import os,sys
 import operator
+import math
+
 #NLP library used
 import nltk
-# nltk.download('punkt')
-# nltk.download('stopwords')
+
+nltk.download('punkt')
+nltk.download('stopwords')
+
+# Regular Expression tokenizer
 from nltk import regexp_tokenize
+# Removing Stopwords
 from nltk.corpus import stopwords
-from spellchecker import SpellChecker
+
 #HTML parsing library
 import bs4
 
-#Pickling library
+#Storing to disk using pickle
 import pickle
 
-
-# Source from multiple documents
-# # Main memory storing with compression
-
-#Main memory contents
-
+#Main memory
 invertedIndex = {}
 docSet = {}
 sw = dict.fromkeys(stopwords.words("english"),True)
-spell = SpellChecker()
-# word: list of Docs mapping
-
-# def truncateList(invertedIndex):
-# 	# count = len(invertedIndex.keys())
-# 	# s = 0
-# 	# for x in invertedIndex:
-# 	# 	s += len(invertedIndex[x])
-# 	# av = int(s/count)
-# 	# print(av)
-# 	lenArray = [len(invertedIndex[x]) for x in invertedIndex]
-# 	print(max(lenArray))
-# 	z = stats.zscore(lenArray)
-
-# 	threshold = 15
-# 	inliers = [lenArray[i] for i in range(len(lenArray)) if z[i]<threshold]
-# 	maxValue = max(inliers)
-# 	print(maxValue)
-# 	print("Num of lists truncated"+str(len(invertedIndex.keys())-len(inliers)))
-# 	for x in invertedIndex:
-# 		invertedIndex[x] = invertedIndex[x][:maxValue+1]
-# 	return invertedIndex
-
+base = 10
+numWiki = 25
 
 def addWiki(wikiPath, invertedIndex,docSet):
 	f=open(wikiPath,'r')
@@ -60,34 +40,36 @@ def addWiki(wikiPath, invertedIndex,docSet):
 	docList = soupData.select('doc')
 
 	# Separately process each document
-	# data = [doc.getText().lower() for doc in docList]
 	for doc in docList:
 		docId = int(doc.get('id'))
-		docSet[docId] = doc.get('title')
-		# listOfWords = tokenizer.tokenize(doc.getText().lower())
 		listOfWords =  [x for x in regexp_tokenize(doc.getText().lower(),r'[?"\s(),.&–\-]', gaps=True) if x not in ('',' ')]
 		dist = nltk.FreqDist(listOfWords)
+		norm = 0
 		for word in dist:
 			if(word in sw):
 				continue
 			if word not in invertedIndex:	
 				invertedIndex[word] = []
 			invertedIndex[word].append((dist[word], docId))
+			norm += math.pow(1 + math.log(dist[word],base),2)
+		norm = math.pow(norm,-0.5)
+		docSet[docId] = (doc.get('title'),norm)
 
 wikiList = []
-for i in range(25):
+for i in range(numWiki):
 	temp = str(i)
 	if(len(temp) == 1):
 		temp = '0'+temp
 	wikiList.append('AA/wiki_'+temp)
 
-
+print("Processing "+str(numWiki)+" wikis from AA...")
+print("")
 for wiki in wikiList:
-	print("[+]Processing "+wiki)
 	addWiki(wiki,invertedIndex,docSet)
+	print("[+]Processed "+wiki)
 
-# invertedIndex = truncateList(invertedIndex)
-
+# Writing to disk
+print("\nWriting to Disk....")
 
 f = open('docTitles','wb')
 pickle.dump(docSet,f)
@@ -98,5 +80,5 @@ f = open('postingLists','wb')
 pickle.dump(invertedIndex,f)
 # f.write(invertedIndex)
 f.close()
-
+print("Done!!")
 
